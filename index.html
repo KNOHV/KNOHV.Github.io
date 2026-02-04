@@ -1,0 +1,138 @@
+
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eBay Gebührenrechner für Gewerbliche</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 { color: #0053a0; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9f5ff;
+            border-left: 5px solid #0053a0;
+        }
+        .result p { margin: 5px 0; font-size: 1.1em; }
+        .profit { color: green; font-weight: bold; }
+        .btn-container { display: flex; gap: 10px; margin-top: 20px; }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .calc-btn { background-color: #0053a0; color: white; }
+        .print-btn { background-color: #666; color: white; }
+        
+        @media print {
+            .calc-btn, .print-btn, .form-group:not(.stay) { display: none; }
+            body { background: white; }
+            .container { box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="printableArea">
+    <h2>eBay Gebührenrechner</h2>
+    
+    <div class="form-group">
+        <label>Verkaufspreis (€):</label>
+        <input type="number" id="price" step="0.01" placeholder="z.B. 49.99">
+    </div>
+    
+    <div class="form-group">
+        <label>Versandkosten vom Käufer (€):</label>
+        <input type="number" id="shipping" step="0.01" value="0.00">
+    </div>
+
+    <div class="form-group">
+        <label>Provisionssatz der Kategorie (%):</label>
+        <select id="rate">
+            <option value="11">11% (Standard)</option>
+            <option value="12.7">12.7% (Haus & Garten)</option>
+            <option value="9">9% (Elektronik teilweise)</option>
+            <option value="15">15% (Schmuck/Uhren)</option>
+            <option value="7">7% (Fahrzeuge)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Fixe Gebühr pro Bestellung (€):</label>
+        <input type="number" id="fixed" step="0.01" value="0.35">
+    </div>
+
+    <div class="form-group">
+        <label>Eigene Einkaufskosten (€):</label>
+        <input type="number" id="cost" step="0.01" value="0.00">
+    </div>
+
+    <div class="btn-container">
+        <button class="calc-btn" onclick="calculate()">Berechnen</button>
+        <button class="print-btn" onclick="window.print()">Drucken</button>
+    </div>
+
+    <div id="output" class="result" style="display:none;">
+        <p>Gesamtumsatz: <span id="resTotal"></span> €</p>
+        <p>Variable Gebühr: <span id="resVarFee"></span> €</p>
+        <p>Fixe Gebühr: <span id="resFixFee"></span> €</p>
+        <hr>
+        <p><strong>Gesamtgebühren: <span id="resTotalFees" style="color:red;"></span> €</strong></p>
+        <p class="profit">Auszahlung (vor Steuern): <span id="resPayout"></span> €</p>
+        <p class="profit">Reiner Gewinn: <span id="resNet"></span> €</p>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const price = parseFloat(document.getElementById('price').value) || 0;
+        const shipping = parseFloat(document.getElementById('shipping').value) || 0;
+        const rate = parseFloat(document.getElementById('rate').value) / 100;
+        const fixed = parseFloat(document.getElementById('fixed').value) || 0;
+        const cost = parseFloat(document.getElementById('cost').value) || 0;
+
+        const totalSales = price + shipping;
+        const varFee = totalSales * rate;
+        const totalFees = varFee + fixed;
+        const payout = totalSales - totalFees;
+        const netProfit = payout - cost;
+
+        document.getElementById('resTotal').innerText = totalSales.toFixed(2);
+        document.getElementById('resVarFee').innerText = varFee.toFixed(2);
+        document.getElementById('resFixFee').innerText = fixed.toFixed(2);
+        document.getElementById('resTotalFees').innerText = totalFees.toFixed(2);
+        document.getElementById('resPayout').innerText = payout.toFixed(2);
+        document.getElementById('resNet').innerText = netProfit.toFixed(2);
+
+        document.getElementById('output').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
