@@ -3,223 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Monitor | Kummer-Neideck</title>
-    <link rel="icon" href="https://www.aosom.de/favicon.ico">
-    <link rel="apple-touch-icon" href="https://www.aosom.de/favicon.ico">
-    
+    <title>CSV & HTML Artikel-Editor</title>
     <style>
-        :root {
-            --aosom-red: #e0001a;
-            --dark-gray: #2d3436;
-            --price-blue: #0984e3;
-            --bg: #f4f7f6;
-        }
-
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--aosom-red); margin-bottom: 30px; padding-bottom: 15px; }
-        h1 { margin: 0; font-size: 22px; color: var(--dark-gray); }
-
-        /* Eingabemaske */
-        .mask { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 25px; }
-        input { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
-        
-        .btn { padding: 12px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; display: flex; align-items: center; gap: 5px; }
-        .btn-add { background: var(--aosom-red); }
-        .btn-export { background: #27ae60; }
-        .btn-print { background: var(--dark-gray); }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
-
-        /* Tabelle */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 2px solid #eee; font-size: 12px; text-transform: uppercase; color: #666; }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
-
-        .status-pill { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .in-stock { background: #dff9fb; color: #009432; }
-        .out-of-stock { background: #ffeaa7; color: #d63031; }
-        
-        .price-text { font-weight: bold; color: var(--price-blue); font-size: 1.1em; }
-
-        /* Footer Banner */
-        .footer-banner { 
-            margin-top: 50px; padding: 40px; 
-            background: linear-gradient(135deg, #1e272e 0%, #000000 100%); 
-            color: white; text-align: center; border-radius: 10px;
-        }
-        .footer-banner h2 { margin: 0; letter-spacing: 3px; font-size: 1.8em; text-transform: uppercase; }
-        .footer-banner p { margin: 10px 0 0; opacity: 0.6; font-size: 0.9em; }
-
-        @media (max-width: 768px) { .mask { grid-template-columns: 1fr; } }
-        @media print { .mask, .no-print, .btn-del { display: none !important; } .container { box-shadow: none; border: none; } }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        #search { padding: 10px; width: 250px; border: 1px solid #ccc; border-radius: 4px; }
+        .table-wrapper { overflow-x: auto; max-height: 500px; border: 1px solid #ddd; border-radius: 4px; }
+        table { border-collapse: collapse; width: 100%; background: white; }
+        th { background-color: #4a5568; color: white; position: sticky; top: 0; padding: 12px; text-align: left; z-index: 10; }
+        td { border: 1px solid #e2e8f0; padding: 8px; min-width: 120px; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #edf2f7; }
+        .btn { padding: 10px 16px; cursor: pointer; border: none; border-radius: 4px; font-weight: 600; transition: background 0.2s; }
+        .btn-open { background: #3182ce; color: white; }
+        .btn-save { background: #38a169; color: white; }
+        .btn-add { background: #718096; color: white; }
+        .btn:hover { opacity: 0.9; }
+        #status { font-size: 0.85em; color: #718096; margin-left: auto; }
+        [contenteditable]:focus { outline: 2px solid #3182ce; background: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>Aosom Multi-Monitor</h1>
-        <div class="no-print" style="text-align:right">
-            <span id="timer-label" style="font-size: 0.8em; color: #888;">Nächstes Update: <b id="timer">05:00</b></span>
+    <h2>Artikel-Datenbank Editor</h2>
+
+    <div class="controls">
+        <button class="btn btn-open" onclick="loadFile()">Datei öffnen</button>
+        <button class="btn btn-save" onclick="saveFile()">Speichern</button>
+        <button class="btn btn-add" onclick="addRow()">+ Neuer Artikel</button>
+        <input type="text" id="search" placeholder="Suchen (z.B. Artikelnummer)..." onkeyup="filterTable()">
+        <span id="status">Bereit</span>
+    </div>
+
+    <div class="table-wrapper">
+        <div id="tableContainer">
+            <p style="text-align:center; padding: 40px; color: #a0aec0;">Öffnen Sie eine CSV oder HTML Datei zur Bearbeitung.</p>
         </div>
-    </header>
-    
-    <div class="mask no-print">
-        <input type="text" id="skuInput" placeholder="SKU Nr. (z.B. 845-601)">
-        <button class="btn btn-add" onclick="addItem()">Hinzufügen</button>
-        <button class="btn btn-export" onclick="exportCSV()">Excel Export</button>
-        <button class="btn btn-print" onclick="window.print()">Drucken</button>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>SKU</th>
-                    <th>Status</th>
-                    <th>Preis</th>
-                    <th>Quelle / Typ</th>
-                    <th>Letzter Check</th>
-                    <th class="no-print">Aktion</th>
-                </tr>
-            </thead>
-            <tbody id="inventoryBody"></tbody>
-        </table>
-    </div>
-
-    <div class="footer-banner">
-        <h2>Kummer-Neideck</h2>
-        <p>Online-Handel & Vertrieb</p>
     </div>
 </div>
 
-<audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
-
 <script>
-    let inventory = JSON.parse(localStorage.getItem('kn_monitor_final')) || [];
-    const proxy = "https://api.allorigins.win/get?url=";
-    let countdown = 300;
+    let fileHandle;
+    let detectedDelimiter = ';';
 
-    // Browser-Meldungen anfragen
-    if (Notification.permission !== "granted") Notification.requestPermission();
-
-    function addItem() {
-        const sku = document.getElementById('skuInput').value.trim();
-        if (!sku) return;
-        
-        // Wir legen 3 Check-Punkte für die SKU an (Suche, Keyword, Item)
-        // Aber hier optimiert: Wir nehmen die Suche als stabilste Quelle
-        const newItem = {
-            sku: sku,
-            urls: [
-                `https://www.aosom.de/search?q=${sku}`,
-                `https://www.aosom.de/keyword/${sku}`,
-                `https://www.aosom.de/item/${sku}.html`
-            ],
-            status: 'Prüfe...',
-            price: '---',
-            lastUpdate: '-',
-            wasAvailable: false
-        };
-        
-        inventory.push(newItem);
-        document.getElementById('skuInput').value = '';
-        save();
-        runCheck(newItem);
-    }
-
-    async function runCheck(item) {
-        const idx = inventory.findIndex(i => i.sku === item.sku);
-        if (idx === -1) return;
-
+    async function loadFile() {
         try {
-            // Wir nutzen primär die Such-URL, da sie am zuverlässigsten Verfügbarkeit zeigt
-            const res = await fetch(`${proxy}${encodeURIComponent(item.urls[0])}`);
-            const data = await res.json();
-            const html = data.contents.toLowerCase();
+            [fileHandle] = await window.showOpenFilePicker({
+                types: [{
+                    description: 'CSV oder HTML Dateien',
+                    accept: { 'text/csv': ['.csv'], 'text/html': ['.html'] }
+                }]
+            });
 
-            const isAvailable = html.includes('in den warenkorb') || html.includes('cart-fill') || html.includes('add-to-cart');
-            const priceMatch = data.contents.match(/(\d+,\d{2})\s*€/) || data.contents.match(/€\s*(\d+,\d{2})/);
-            const currentPrice = priceMatch ? priceMatch[0] : 'N.A.';
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            document.getElementById('status').textContent = `Datei: ${file.name}`;
 
-            // Benachrichtigung bei Status-Wechsel
-            if (isAvailable && !inventory[idx].wasAvailable && inventory[idx].lastUpdate !== '-') {
-                sendAlert(item.sku, currentPrice);
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                detectAndParseCSV(content);
+            } else {
+                parseHTML(content);
             }
+        } catch (err) { console.log("Abgebrochen"); }
+    }
 
-            inventory[idx].status = isAvailable ? '✅ Auf Lager' : '❌ Ausverkauft';
-            inventory[idx].price = currentPrice;
-            inventory[idx].wasAvailable = isAvailable;
-            inventory[idx].lastUpdate = new Date().toLocaleTimeString();
-        } catch (e) {
-            inventory[idx].status = '⚠️ Fehler';
+    function detectAndParseCSV(text) {
+        const semicolonCount = (text.match(/;/g) || []).length;
+        const commaCount = (text.match(/,/g) || []).length;
+        detectedDelimiter = semicolonCount >= commaCount ? ';' : ',';
+        
+        // CSV-Parsing mit Berücksichtigung von Anführungszeichen
+        const rows = [];
+        let currentRow = [];
+        let currentField = '';
+        let inQuotes = false;
+
+        // Einfaches Regex für CSV-Zeilen (berücksichtigt Quoting)
+        const lines = text.split(/\r?\n/);
+        
+        lines.forEach(line => {
+            if (line.trim() === '') return;
+            const fields = [];
+            let field = '';
+            let escaped = false;
+            for (let char of line) {
+                if (char === '"' && !escaped) inQuotes = !inQuotes;
+                else if (char === detectedDelimiter && !inQuotes) {
+                    fields.push(field.trim());
+                    field = '';
+                } else field += char;
+            }
+            fields.push(field.trim());
+            rows.push(fields);
+        });
+
+        renderTable(rows);
+    }
+
+    function parseHTML(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const rows = Array.from(doc.querySelectorAll('tr')).map(tr => 
+            Array.from(tr.querySelectorAll('td, th')).map(cell => cell.innerText.trim())
+        );
+        renderTable(rows);
+    }
+
+    function renderTable(data) {
+        if (!data || data.length === 0) return;
+        let html = `<table id="dataTable"><thead><tr>`;
+        data[0].forEach(h => html += `<th>${h || 'Spalte'}</th>`);
+        html += `</tr></thead><tbody>`;
+
+        for (let i = 1; i < data.length; i++) {
+            html += `<tr>`;
+            data[i].forEach(cell => html += `<td contenteditable="true">${cell}</td>`);
+            html += `</tr>`;
         }
-        save();
+        html += `</tbody></table>`;
+        document.getElementById('tableContainer').innerHTML = html;
     }
 
-    function sendAlert(sku, price) {
-        document.getElementById('alertSound').play().catch(()=>{});
-        if (Notification.permission === "granted") {
-            new Notification("Kummer-Neideck: Wieder da!", { body: `SKU ${sku} ist verfügbar für ${price}` });
+    function addRow() {
+        const table = document.querySelector("#dataTable tbody");
+        if (!table) return alert("Zuerst eine Datei öffnen!");
+        const colCount = document.querySelectorAll("#dataTable th").length;
+        const row = table.insertRow();
+        for (let i = 0; i < colCount; i++) {
+            const cell = row.insertCell();
+            cell.contentEditable = "true";
         }
+        row.scrollIntoView();
     }
 
-    function exportCSV() {
-        let csv = "SKU;Status;Preis;Zeitstempel\n";
-        inventory.forEach(i => csv += `${i.sku};${i.status};${i.price};${i.lastUpdate}\n`);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `Kummer_Neideck_Report.csv`);
-        link.click();
-    }
-
-    function save() {
-        localStorage.setItem('kn_monitor_final', JSON.stringify(inventory));
-        render();
-    }
-
-    function render() {
-        const body = document.getElementById('inventoryBody');
-        body.innerHTML = '';
-        inventory.forEach((item, i) => {
-            const sClass = item.status.includes('✅') ? 'in-stock' : 'out-of-stock';
-            body.innerHTML += `
-                <tr>
-                    <td><strong>${item.sku}</strong></td>
-                    <td><span class="status-pill ${sClass}">${item.status}</span></td>
-                    <td><span class="price-text">${item.price}</span></td>
-                    <td style="font-size:0.8em; color:#888">Search & Item</td>
-                    <td style="font-size:0.85em;">${item.lastUpdate}</td>
-                    <td class="no-print">
-                        <button onclick="deleteItem(${i})" class="btn-del" style="color:#e0001a; background:none; border:none; cursor:pointer;">Löschen</button>
-                    </td>
-                </tr>`;
+    function filterTable() {
+        const query = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('#dataTable tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
         });
     }
 
-    function deleteItem(i) {
-        if(confirm("Löschen?")) { inventory.splice(i, 1); save(); }
-    }
+    async function saveFile() {
+        if (!fileHandle) return alert("Keine Datei geladen!");
+        const table = document.getElementById('dataTable');
+        const rows = Array.from(table.rows);
+        let output = "";
 
-    // Timer Logik (5 Min)
-    setInterval(() => {
-        countdown--;
-        if (countdown <= 0) {
-            inventory.forEach(item => runCheck(item));
-            countdown = 300;
+        if (fileHandle.name.toLowerCase().endsWith('.csv')) {
+            // Sicherer CSV Export mit Quoting
+            output = rows.map(row => {
+                return Array.from(row.cells).map(cell => {
+                    let val = cell.innerText.replace(/"/g, '""'); // Anführungszeichen verdoppeln
+                    return `"${val}"`; // Jedes Feld in Quotes setzen
+                }).join(detectedDelimiter);
+            }).join('\r\n');
+        } else {
+            // HTML Export
+            const tableBody = rows.map(row => `<tr>${Array.from(row.cells).map(c => `<td>${c.innerText}</td>`).join('')}</tr>`).join('\n');
+            output = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><table border="1">${tableBody}</table></body></html>`;
         }
-        let m = Math.floor(countdown / 60);
-        let s = countdown % 60;
-        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-    }, 1000);
 
-    // Initialstart
-    save();
-    if (inventory.length > 0) inventory.forEach(item => runCheck(item));
+        try {
+            const writable = await fileHandle.createWritable();
+            // UTF-8 BOM hinzufügen, damit Excel Umlaute erkennt
+            if (fileHandle.name.endsWith('.csv')) await writable.write(new Uint8Array([0xEF, 0xBB, 0xBF]));
+            await writable.write(output);
+            await writable.close();
+            alert("Erfolgreich gespeichert!");
+        } catch (err) { alert("Fehler: " + err.message); }
+    }
 </script>
-
 </body>
 </html>
