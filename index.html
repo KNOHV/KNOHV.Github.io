@@ -1,137 +1,224 @@
-
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eBay Gebührenrechner für Gewerbliche</title>
+    <title>Multi-Monitor | Kummer-Neideck</title>
+    <link rel="icon" href="https://www.aosom.de/favicon.ico">
+    <link rel="apple-touch-icon" href="https://www.aosom.de/favicon.ico">
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
+        :root {
+            --aosom-red: #e0001a;
+            --dark-gray: #2d3436;
+            --price-blue: #0984e3;
+            --bg: #f4f7f6;
         }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 500px;
-        }
-        h2 { color: #0053a0; text-align: center; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e9f5ff;
-            border-left: 5px solid #0053a0;
-        }
-        .result p { margin: 5px 0; font-size: 1.1em; }
-        .profit { color: green; font-weight: bold; }
-        .btn-container { display: flex; gap: 10px; margin-top: 20px; }
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .calc-btn { background-color: #0053a0; color: white; }
-        .print-btn { background-color: #666; color: white; }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        @media print {
-            .calc-btn, .print-btn, .form-group:not(.stay) { display: none; }
-            body { background: white; }
-            .container { box-shadow: none; border: none; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--aosom-red); margin-bottom: 30px; padding-bottom: 15px; }
+        h1 { margin: 0; font-size: 22px; color: var(--dark-gray); }
+
+        /* Eingabemaske */
+        .mask { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 25px; }
+        input { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        
+        .btn { padding: 12px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; display: flex; align-items: center; gap: 5px; }
+        .btn-add { background: var(--aosom-red); }
+        .btn-export { background: #27ae60; }
+        .btn-print { background: var(--dark-gray); }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        /* Tabelle */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 2px solid #eee; font-size: 12px; text-transform: uppercase; color: #666; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+
+        .status-pill { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .in-stock { background: #dff9fb; color: #009432; }
+        .out-of-stock { background: #ffeaa7; color: #d63031; }
+        
+        .price-text { font-weight: bold; color: var(--price-blue); font-size: 1.1em; }
+
+        /* Footer Banner */
+        .footer-banner { 
+            margin-top: 50px; padding: 40px; 
+            background: linear-gradient(135deg, #1e272e 0%, #000000 100%); 
+            color: white; text-align: center; border-radius: 10px;
         }
+        .footer-banner h2 { margin: 0; letter-spacing: 3px; font-size: 1.8em; text-transform: uppercase; }
+        .footer-banner p { margin: 10px 0 0; opacity: 0.6; font-size: 0.9em; }
+
+        @media (max-width: 768px) { .mask { grid-template-columns: 1fr; } }
+        @media print { .mask, .no-print, .btn-del { display: none !important; } .container { box-shadow: none; border: none; } }
     </style>
 </head>
 <body>
 
-<div class="container" id="printableArea">
-    <h2>eBay Gebührenrechner</h2>
+<div class="container">
+    <header>
+        <h1>Aosom Multi-Monitor</h1>
+        <div class="no-print" style="text-align:right">
+            <span id="timer-label" style="font-size: 0.8em; color: #888;">Nächstes Update: <b id="timer">05:00</b></span>
+        </div>
+    </header>
     
-    <div class="form-group">
-        <label>Verkaufspreis (€):</label>
-        <input type="number" id="price" step="0.01" placeholder="z.B. 49.99">
-    </div>
-    
-    <div class="form-group">
-        <label>Versandkosten vom Käufer (€):</label>
-        <input type="number" id="shipping" step="0.01" value="0.00">
+    <div class="mask no-print">
+        <input type="text" id="skuInput" placeholder="SKU Nr. (z.B. 845-601)">
+        <button class="btn btn-add" onclick="addItem()">Hinzufügen</button>
+        <button class="btn btn-export" onclick="exportCSV()">Excel Export</button>
+        <button class="btn btn-print" onclick="window.print()">Drucken</button>
     </div>
 
-    <div class="form-group">
-        <label>Provisionssatz der Kategorie (%):</label>
-        <select id="rate">
-            <option value="11">11% (Standard)</option>
-            <option value="12.7">12.7% (Haus & Garten)</option>
-            <option value="9">9% (Elektronik teilweise)</option>
-            <option value="15">15% (Schmuck/Uhren)</option>
-            <option value="7">7% (Fahrzeuge)</option>
-        </select>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Status</th>
+                    <th>Preis</th>
+                    <th>Quelle / Typ</th>
+                    <th>Letzter Check</th>
+                    <th class="no-print">Aktion</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+        </table>
     </div>
 
-    <div class="form-group">
-        <label>Fixe Gebühr pro Bestellung (€):</label>
-        <input type="number" id="fixed" step="0.01" value="0.35">
-    </div>
-
-    <div class="form-group">
-        <label>Eigene Einkaufskosten (€):</label>
-        <input type="number" id="cost" step="0.01" value="0.00">
-    </div>
-
-    <div class="btn-container">
-        <button class="calc-btn" onclick="calculate()">Berechnen</button>
-        <button class="print-btn" onclick="window.print()">Drucken</button>
-    </div>
-
-    <div id="output" class="result" style="display:none;">
-        <p>Gesamtumsatz: <span id="resTotal"></span> €</p>
-        <p>Variable Gebühr: <span id="resVarFee"></span> €</p>
-        <p>Fixe Gebühr: <span id="resFixFee"></span> €</p>
-        <hr>
-        <p><strong>Gesamtgebühren: <span id="resTotalFees" style="color:red;"></span> €</strong></p>
-        <p class="profit">Auszahlung (vor Steuern): <span id="resPayout"></span> €</p>
-        <p class="profit">Reiner Gewinn: <span id="resNet"></span> €</p>
+    <div class="footer-banner">
+        <h2>Kummer-Neideck</h2>
+        <p>Online-Handel & Vertrieb</p>
     </div>
 </div>
 
+<audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
 <script>
-    function calculate() {
-        const price = parseFloat(document.getElementById('price').value) || 0;
-        const shipping = parseFloat(document.getElementById('shipping').value) || 0;
-        const rate = parseFloat(document.getElementById('rate').value) / 100;
-        const fixed = parseFloat(document.getElementById('fixed').value) || 0;
-        const cost = parseFloat(document.getElementById('cost').value) || 0;
+    let inventory = JSON.parse(localStorage.getItem('kn_monitor_final')) || [];
+    const proxy = "https://api.allorigins.win/get?url=";
+    let countdown = 300;
 
-        const totalSales = price + shipping;
-        const varFee = totalSales * rate;
-        const totalFees = varFee + fixed;
-        const payout = totalSales - totalFees;
-        const netProfit = payout - cost;
+    // Browser-Meldungen anfragen
+    if (Notification.permission !== "granted") Notification.requestPermission();
 
-        document.getElementById('resTotal').innerText = totalSales.toFixed(2);
-        document.getElementById('resVarFee').innerText = varFee.toFixed(2);
-        document.getElementById('resFixFee').innerText = fixed.toFixed(2);
-        document.getElementById('resTotalFees').innerText = totalFees.toFixed(2);
-        document.getElementById('resPayout').innerText = payout.toFixed(2);
-        document.getElementById('resNet').innerText = netProfit.toFixed(2);
-
-        document.getElementById('output').style.display = 'block';
+    function addItem() {
+        const sku = document.getElementById('skuInput').value.trim();
+        if (!sku) return;
+        
+        // Wir legen 3 Check-Punkte für die SKU an (Suche, Keyword, Item)
+        // Aber hier optimiert: Wir nehmen die Suche als stabilste Quelle
+        const newItem = {
+            sku: sku,
+            urls: [
+                `https://www.aosom.de/search?q=${sku}`,
+                `https://www.aosom.de/keyword/${sku}`,
+                `https://www.aosom.de/item/${sku}.html`
+            ],
+            status: 'Prüfe...',
+            price: '---',
+            lastUpdate: '-',
+            wasAvailable: false
+        };
+        
+        inventory.push(newItem);
+        document.getElementById('skuInput').value = '';
+        save();
+        runCheck(newItem);
     }
+
+    async function runCheck(item) {
+        const idx = inventory.findIndex(i => i.sku === item.sku);
+        if (idx === -1) return;
+
+        try {
+            // Wir nutzen primär die Such-URL, da sie am zuverlässigsten Verfügbarkeit zeigt
+            const res = await fetch(`${proxy}${encodeURIComponent(item.urls[0])}`);
+            const data = await res.json();
+            const html = data.contents.toLowerCase();
+
+            const isAvailable = html.includes('in den warenkorb') || html.includes('cart-fill') || html.includes('add-to-cart');
+            const priceMatch = data.contents.match(/(\d+,\d{2})\s*€/) || data.contents.match(/€\s*(\d+,\d{2})/);
+            const currentPrice = priceMatch ? priceMatch[0] : 'N.A.';
+
+            // Benachrichtigung bei Status-Wechsel
+            if (isAvailable && !inventory[idx].wasAvailable && inventory[idx].lastUpdate !== '-') {
+                sendAlert(item.sku, currentPrice);
+            }
+
+            inventory[idx].status = isAvailable ? '✅ Auf Lager' : '❌ Ausverkauft';
+            inventory[idx].price = currentPrice;
+            inventory[idx].wasAvailable = isAvailable;
+            inventory[idx].lastUpdate = new Date().toLocaleTimeString();
+        } catch (e) {
+            inventory[idx].status = '⚠️ Fehler';
+        }
+        save();
+    }
+
+    function sendAlert(sku, price) {
+        document.getElementById('alertSound').play().catch(()=>{});
+        if (Notification.permission === "granted") {
+            new Notification("Kummer-Neideck: Wieder da!", { body: `SKU ${sku} ist verfügbar für ${price}` });
+        }
+    }
+
+    function exportCSV() {
+        let csv = "SKU;Status;Preis;Zeitstempel\n";
+        inventory.forEach(i => csv += `${i.sku};${i.status};${i.price};${i.lastUpdate}\n`);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `Kummer_Neideck_Report.csv`);
+        link.click();
+    }
+
+    function save() {
+        localStorage.setItem('kn_monitor_final', JSON.stringify(inventory));
+        render();
+    }
+
+    function render() {
+        const body = document.getElementById('inventoryBody');
+        body.innerHTML = '';
+        inventory.forEach((item, i) => {
+            const sClass = item.status.includes('✅') ? 'in-stock' : 'out-of-stock';
+            body.innerHTML += `
+                <tr>
+                    <td><strong>${item.sku}</strong></td>
+                    <td><span class="status-pill ${sClass}">${item.status}</span></td>
+                    <td><span class="price-text">${item.price}</span></td>
+                    <td style="font-size:0.8em; color:#888">Search & Item</td>
+                    <td style="font-size:0.85em;">${item.lastUpdate}</td>
+                    <td class="no-print">
+                        <button onclick="deleteItem(${i})" class="btn-del" style="color:#e0001a; background:none; border:none; cursor:pointer;">Löschen</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    function deleteItem(i) {
+        if(confirm("Löschen?")) { inventory.splice(i, 1); save(); }
+    }
+
+    // Timer Logik (5 Min)
+    setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            inventory.forEach(item => runCheck(item));
+            countdown = 300;
+        }
+        let m = Math.floor(countdown / 60);
+        let s = countdown % 60;
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+    }, 1000);
+
+    // Initialstart
+    save();
+    if (inventory.length > 0) inventory.forEach(item => runCheck(item));
 </script>
 
 </body>
