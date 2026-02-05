@@ -2,324 +2,141 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kummer-Neideck Sentinel v7.5 | Persistent Edition</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    
+    <title>SKU Krypto-Tool | Kummer-Nedeideck</title>
     <style>
-        :root { 
-            --primary: #d40019; --dark: #0a0a0a; --safe: #27ae60; --warn: #f39c12;
-            --label-w: 100mm; --label-h: 150mm;
-        }
+        :root { --primary: #2563eb; --secondary: #059669; --accent: #64748b; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 480px; margin-bottom: 40px; }
+        h2 { margin-top: 0; color: #1e293b; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        label { display: block; margin: 15px 0 5px; font-weight: 600; font-size: 0.9em; color: #475569; }
+        input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; }
 
-        body { 
-            font-family: 'Inter', sans-serif; background: #000; color: #fff;
-            margin: 0; min-height: 100vh; overflow-x: hidden;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2000') no-repeat center center fixed;
-            background-size: cover;
-        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        button { padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.1s, opacity 0.2s; font-size: 14px; }
+        button:active { transform: scale(0.98); }
+        .btn-enc { background: var(--primary); }
+        .btn-dec { background: var(--secondary); }
+        .btn-action { background: var(--accent); width: 100%; margin-top: 10px; }
 
-        /* App Layout */
-        #app-content { display: block; }
-        .header { background: rgba(0,0,0,0.95); padding: 15px 40px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        
-        .main-container { display: grid; grid-template-columns: 350px 1fr; gap: 25px; padding: 25px; max-width: 1700px; margin: auto; transition: all 0.3s; }
+        .result-box { background: #f1f5f9; padding: 15px; margin-top: 15px; border-radius: 6px; border: 1px dashed #cbd5e1; min-height: 40px; word-break: break-all; font-family: 'Courier New', monospace; position: relative; }
+        .char-count { font-size: 0.75rem; color: #64748b; position: absolute; bottom: 5px; right: 10px; }
 
-        .mobile-view .main-container { grid-template-columns: 1fr; }
-        .mobile-view .sidebar { order: 2; }
-        .mobile-view #preview-container { transform: scale(0.7); transform-origin: top center; margin-bottom: -100px; }
-
-        .card { background: rgba(255,255,255,1); color: #222; padding: 20px; border-radius: 6px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); margin-bottom: 20px; }
-
-        .preview-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; }
-        #preview-container {
-            width: var(--label-w); height: var(--label-h); background: #fff;
-            overflow: hidden; position: relative; border: 3px solid #000;
-        }
-        #pdf-canvas { position: absolute; transform-origin: center center; }
-
-        .sentinel-bar {
-            width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 4px;
-            font-weight: 900; font-size: 13px; text-transform: uppercase;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .status-ok { background: var(--safe); color: white; border-left: 10px solid #1e7e34; }
-        .status-error { background: var(--primary); color: white; animation: pulse 1s infinite; border-left: 10px solid #800000; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
-
-        .btn { padding: 12px; cursor: pointer; border: none; font-weight: 900; text-transform: uppercase; font-size: 11px; transition: 0.2s; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-print { background: var(--primary); color: #fff; width: 100%; }
-        .btn-dark { background: var(--dark); color: #fff; }
-        .btn-excel { background: #1e7e34; color: #fff; width: 100%; margin-top: 10px; }
-        .btn-toggle { background: #555; color: #fff; padding: 8px 15px; }
-        .btn-toggle.active { background: var(--primary); }
-
-        .file-list-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .file-list-item.active { background: #fff1f1; border-left: 5px solid var(--primary); font-weight: bold; }
-
-        /* Copyright Banner Styles */
-        .kn-copyright-banner { background: rgba(10, 10, 10, 0.95); color: #ffffff; padding: 20px 0; border-top: 2px solid #d40019; font-size: 13px; margin-top: 50px; }
-        .kn-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .kn-brand { font-weight: 900; text-transform: uppercase; color: #d40019; }
-        .kn-sep { margin: 0 10px; color: #444; }
-        .kn-text { color: #bbb; }
-        .kn-copy { color: #777; }
-
-        @media print {
-            .header, .sidebar, .toolbar, .footer, #status-display, .btn, .device-selector, .kn-copyright-banner { display: none !important; }
-            body { background: white !important; }
-            #preview-container { position: fixed; inset: 0; width: 100mm; height: 150mm; transform: none !important; border: none !important; }
-            @page { size: 100mm 150mm; margin: 0; }
-        }
+        footer { margin-top: auto; padding: 20px; text-align: center; color: #64748b; font-size: 0.9em; width: 100%; border-top: 1px solid #e2e8f0; }
     </style>
 </head>
-<body class="desktop-mode">
+<body>
 
-    <div id="app-content">
-        <div class="header">
-            <div style="font-weight:900; font-size:22px;">KUMMER-NEIDECK <span style="color:var(--primary)">SENTINEL 7.5</span></div>
-            <div class="device-selector" style="display:flex; gap:10px;">
-                <button id="mode-desktop" class="btn btn-toggle active" onclick="setMode('desktop')">💻 Desktop</button>
-                <button id="mode-mobile" class="btn btn-toggle" onclick="setMode('mobile')">📱 Mobil</button>
-                <div id="clock" style="margin-left:20px; font-family:monospace; font-weight:bold; align-self:center; color:var(--primary);">00:00:00</div>
-            </div>
-        </div>
+<div class="card">
+    <h2>SKU Secure-Tool</h2>
 
-        <div class="main-container">
-            <div class="sidebar">
-                <div class="card">
-                    <h3>📥 VERSAND-QUEUE</h3>
-                    <input type="file" id="pdf-upload" multiple accept="application/pdf" style="font-size:11px; margin-bottom:15px; width:100%;">
-                    <div id="list-container" style="max-height:200px; overflow-y:auto; border:1px solid #eee;"></div>
-                    <button class="btn btn-dark" style="width:100%; margin-top:15px;" onclick="batchStart()">🚀 STAPELDRUCK</button>
-                </div>
-                
-                <div class="card">
-                    <h3>📊 AUDIT & EXPORT</h3>
-                    <div id="print-logs" style="max-height: 120px; overflow-y:auto; font-size:10px; margin-bottom:10px; font-family:monospace; background:#f9f9f9; padding:5px;"></div>
-                    <button class="btn btn-excel" onclick="exportToExcel()">💾 EXCEL-LOG EXPORT</button>
-                    <button class="btn btn-dark" style="width:100%; margin-top:5px; font-size:9px; opacity:0.6;" onclick="clearLogs()">PROTOKOLL LÖSCHEN</button>
-                </div>
-            </div>
+    <label>Master-Passwort</label>
+    <input type="password" id="pw" value="MeinGeheimnis123">
 
-            <div class="preview-wrapper">
-                <div id="status-display" class="sentinel-bar status-ok">SENTINEL: SCANNING...</div>
+    <label>Original SKU</label>
+    <input type="text" id="skuInput" placeholder="z.B. SKU-99-RED" maxlength="25">
 
-                <div class="card" style="width:100%; box-sizing:border-box; margin-bottom:20px;">
-                    <div style="display:flex; gap:20px; align-items:center;">
-                        <div style="flex:1">
-                            <label style="font-size:10px; font-weight:900; color:#444;">PRÄZISIONS-SKALIERUNG (<span id="zoom-txt">100</span>%)</label>
-                            <input type="range" id="zoom-range" min="10" max="400" step="0.1" value="100" oninput="uiUpdate()">
-                        </div>
-                        <button class="btn btn-dark" onclick="rotateLabel()">↻ 90° DREHEN</button>
-                        <button class="btn btn-print" style="width:200px;" onclick="doPrint()">🖨️ EINZELDRUCK</button>
-                    </div>
-                </div>
-
-                <div id="preview-container">
-                    <canvas id="pdf-canvas"></canvas>
-                </div>
-            </div>
-        </div>
+    <div class="btn-group">
+        <button class="btn-enc" onclick="handleEncrypt()">Verschlüsseln ↓</button>
+        <button class="btn-dec" onclick="handleDecrypt()">Entschlüsseln ↑</button>
     </div>
 
-    <footer class="kn-copyright-banner">
-        <div class="kn-container">
-            <div class="kn-content">
-                <span class="kn-brand">Kummer-Neideck</span>
-                <span class="kn-sep">|</span>
-                <span class="kn-text">Online-Handel & Vertrieb</span>
-            </div>
-            <div class="kn-copy">
-                &copy; <span id="current-year"></span> Alle Rechte vorbehalten.
-            </div>
-        </div>
-    </footer>
+    <label>Verschlüsselter Code</label>
+    <input type="text" id="cipherInput" placeholder="Hier Code einfügen">
 
-    <script>
-        // --- PERSISTENZ ENGINE (IndexedDB) ---
-        const DB_NAME = "SentinelDB";
-        const STORE_NAME = "PDFStore";
-        let db;
+    <label>Ergebnis:</label>
+    <div class="result-box" id="outputField">
+        Bereit...
+        <span class="char-count" id="count">0/45</span>
+    </div>
 
-        const initDB = () => {
-            return new Promise((resolve) => {
-                const request = indexedDB.open(DB_NAME, 1);
-                request.onupgradeneeded = (e) => {
-                    e.target.result.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
-                };
-                request.onsuccess = (e) => { db = e.target.result; resolve(); };
-            });
-        };
+    <button class="btn-action" onclick="copyToClipboard()">Ergebnis kopieren</button>
+    <button class="btn-action" style="background:#475569" onclick="saveToFile()">Als .txt speichern</button>
+</div>
 
-        const savePDFLocal = (fileData) => {
-            const tx = db.transaction(STORE_NAME, "readwrite");
-            tx.objectStore(STORE_NAME).add(fileData);
-        };
+<footer>
+    &copy; 2024 - 2026 Copyright by <strong>Kummer-Nedeideck Online-Handel & Vertrieb</strong>
+</footer>
 
-        const loadSavedPDFs = () => {
-            const tx = db.transaction(STORE_NAME, "readonly");
-            const request = tx.objectStore(STORE_NAME).getAll();
-            request.onsuccess = () => {
-                pdfList = request.result;
-                refreshList();
-                if(pdfList.length > 0) loadPDF(0);
-            };
-        };
+<script>
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
 
-        const deletePDFLocal = (id) => {
-            const tx = db.transaction(STORE_NAME, "readwrite");
-            tx.objectStore(STORE_NAME).delete(id);
-        };
+    const toB64 = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const fromB64 = s => {
+        s = s.replace(/-/g, '+').replace(/_/g, '/');
+        while (s.length % 4) s += '=';
+        return new Uint8Array(atob(s).split("").map(c => c.charCodeAt(0)));
+    };
 
-        // --- APP LOGIC ---
-        var pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    async function deriveKey(pw) {
+        const material = await crypto.subtle.importKey("raw", encoder.encode(pw), "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt: encoder.encode("knd-salt"), iterations: 1000, hash: "SHA-256" },
+            material, { name: "AES-CTR", length: 128 }, false, ["encrypt", "decrypt"]
+        );
+    }
 
-        let pdfList = [];
-        let currentIdx = -1;
-        let pdfDoc = null;
-        let rotation = 0;
-        let printHistory = JSON.parse(localStorage.getItem('kn_audit_log_v7_5') || '[]');
+    async function handleEncrypt() {
+        const pw = document.getElementById('pw').value;
+        const sku = document.getElementById('skuInput').value;
+        if (!sku) return alert("Bitte SKU eingeben");
 
-        window.onload = async function() {
-            document.getElementById('current-year').textContent = new Date().getFullYear();
-            startTime();
-            runSentinelLoop();
-            refreshLogs();
-            await initDB();
-            loadSavedPDFs();
-        };
+        const key = await deriveKey(pw);
+        const iv = crypto.getRandomValues(new Uint8Array(8));
+        const counter = new Uint8Array(16); counter.set(iv);
 
-        document.getElementById('pdf-upload').addEventListener('change', async (e) => {
-            for(let file of e.target.files) {
-                if(file.type !== 'application/pdf') continue;
-                const reader = new FileReader();
-                reader.onload = function() {
-                    const fileObj = { name: file.name, data: new Uint8Array(this.result) };
-                    savePDFLocal(fileObj);
-                    pdfList.push(fileObj);
-                    refreshList();
-                    if(currentIdx === -1) loadPDF(pdfList.length - 1);
-                };
-                reader.readAsArrayBuffer(file);
-            }
-        });
+        const encrypted = await crypto.subtle.encrypt({ name: "AES-CTR", counter, length: 64 }, key, encoder.encode(sku));
+        const combined = new Uint8Array(iv.length + encrypted.byteLength);
+        combined.set(iv);
+        combined.set(new Uint8Array(encrypted), iv.length);
 
-        async function loadPDF(idx) {
-            if(!pdfList[idx]) return;
-            if(pdfDoc) try { await pdfDoc.destroy(); } catch(e) {}
-            currentIdx = idx;
-            rotation = 0;
-            refreshList();
-            try {
-                pdfDoc = await pdfjsLib.getDocument({ data: pdfList[idx].data }).promise;
-                render();
-            } catch (error) { console.error(error); }
+        const res = toB64(combined);
+        document.getElementById('cipherInput').value = res;
+        showResult(res);
+    }
+
+    async function handleDecrypt() {
+        const pw = document.getElementById('pw').value;
+        const cipherText = document.getElementById('cipherInput').value;
+        if (!cipherText) return alert("Kein Code zum Entschlüsseln vorhanden");
+
+        try {
+            const key = await deriveKey(pw);
+            const combined = fromB64(cipherText);
+            const iv = combined.slice(0, 8);
+            const data = combined.slice(8);
+            const counter = new Uint8Array(16); counter.set(iv);
+
+            const decrypted = await crypto.subtle.decrypt({ name: "AES-CTR", counter, length: 64 }, key, data);
+            showResult(decoder.decode(decrypted));
+        } catch (e) {
+            showResult("FEHLER: Falscher Code!");
         }
+    }
 
-        async function render() {
-            if(!pdfDoc) return;
-            const page = await pdfDoc.getPage(1);
-            const viewport = page.getViewport({ scale: 4.0, rotation: rotation });
-            const canvas = document.getElementById('pdf-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width; canvas.height = viewport.height;
-            await page.render({ canvasContext: ctx, viewport }).promise;
-            autoAlign();
-        }
+    function showResult(text) {
+        const el = document.getElementById('outputField');
+        el.firstChild.textContent = text;
+        document.getElementById('count').innerText = text.length + "/45";
+    }
 
-        function autoAlign() {
-            const canvas = document.getElementById('pdf-canvas');
-            if(canvas.width === 0) return;
-            const data = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height).data;
-            let x1=canvas.width, y1=canvas.height, x2=0, y2=0, found=false;
-            for(let y=0; y<canvas.height; y+=10) {
-                for(let x=0; x<canvas.width; x+=10) {
-                    if(data[(y*canvas.width+x)*4 + 3] > 0 && data[(y*canvas.width+x)*4] < 200) {
-                        x1=Math.min(x1,x); y1=Math.min(y1,y);
-                        x2=Math.max(x2,x); y2=Math.max(y2,y);
-                        found=true;
-                    }
-                }
-            }
-            if(found) {
-                let zoom = Math.min((canvas.width/(x2-x1))*94, (canvas.height/(y2-y1))*94, 380);
-                document.getElementById('zoom-range').value = zoom;
-                canvas.dataset.x = (canvas.width/2 - (x1+x2)/2)/4;
-                canvas.dataset.y = (canvas.height/2 - (y1+y2)/2)/4;
-            }
-            uiUpdate();
-        }
+    function copyToClipboard() {
+        const text = document.getElementById('outputField').firstChild.textContent;
+        if (text === "Bereit...") return;
+        navigator.clipboard.writeText(text);
+        alert("In Zwischenablage kopiert!");
+    }
 
-        function uiUpdate() {
-            const z = document.getElementById('zoom-range').value;
-            document.getElementById('zoom-txt').innerText = parseFloat(z).toFixed(1);
-            const canvas = document.getElementById('pdf-canvas');
-            canvas.style.transform = `translate(calc(-50% + ${canvas.dataset.x||0}px), calc(-50% + ${canvas.dataset.y||0}px)) scale(${z/100})`;
-            canvas.style.left="50%"; canvas.style.top="50%";
-        }
+    function saveToFile() {
+        const text = document.getElementById('outputField').firstChild.textContent;
+        if (text === "Bereit...") return;
+        const blob = new Blob([`Ergebnis: ${text}\nDatum: ${new Date().toLocaleString()}\nCopyright: Kummer-Nedeideck`], {type: "text/plain"});
+        const anchor = document.createElement("a");
+        anchor.download = "sku_export.txt";
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+    }
+</script>
 
-        function deletePdf(i) {
-            if(pdfList[i].id) deletePDFLocal(pdfList[i].id);
-            pdfList.splice(i,1);
-            if(currentIdx >= pdfList.length) currentIdx = pdfList.length - 1;
-            if(pdfList.length === 0) currentIdx = -1; else loadPDF(currentIdx);
-            refreshList();
-        }
-
-        // --- Restliche Hilfsfunktionen ---
-        function startTime() { setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000); }
-        function setMode(m) {
-            document.body.className = m + "-view";
-            document.getElementById('mode-desktop').classList.toggle('active', m==='desktop');
-            document.getElementById('mode-mobile').classList.toggle('active', m==='mobile');
-        }
-        function refreshList() {
-            document.getElementById('list-container').innerHTML = pdfList.map((p, i) => `
-                <div class="file-list-item ${i===currentIdx?'active':''}" onclick="loadPDF(${i})">
-                    <span>${p.name.substring(0,25)}</span>
-                    <b style="color:red; cursor:pointer;" onclick="event.stopPropagation(); deletePdf(${i});">✕</b>
-                </div>
-            `).join('');
-        }
-        function refreshLogs() { document.getElementById('print-logs').innerHTML = printHistory.map(h => `<div>[${h.zeit}] ${h.datei.substring(0,20)}</div>`).join(''); }
-        function clearLogs() { if(confirm("Log löschen?")) { printHistory=[]; localStorage.removeItem('kn_audit_log_v7_5'); refreshLogs(); } }
-        async function rotateLabel() { if(!pdfDoc) return; rotation = (rotation + 90) % 360; render(); }
-        function runSentinelLoop() {
-            setInterval(() => {
-                if(currentIdx === -1) return;
-                const zoom = parseFloat(document.getElementById('zoom-range').value);
-                const status = document.getElementById('status-display');
-                status.className = (zoom > 395 || zoom < 20) ? "sentinel-bar status-error" : "sentinel-bar status-ok";
-                status.innerText = (zoom > 395 || zoom < 20) ? "SENTINEL: ZOOM GEFÄHRDET LESBARKEIT!" : "SENTINEL: OPTIMAL ✓";
-            }, 1000);
-        }
-        function doPrint() {
-            if(currentIdx === -1) return;
-            printHistory.unshift({ datum: new Date().toLocaleDateString('de-DE'), zeit: new Date().toLocaleTimeString('de-DE'), datei: pdfList[currentIdx].name });
-            localStorage.setItem('kn_audit_log_v7_5', JSON.stringify(printHistory.slice(0, 1000)));
-            refreshLogs();
-            window.print();
-        }
-        async function batchStart() {
-            for(let i=0; i<pdfList.length; i++) {
-                await loadPDF(i);
-                await new Promise(r => setTimeout(r, 600));
-                doPrint();
-                await new Promise(r => setTimeout(r, 2000));
-            }
-        }
-        function exportToExcel() {
-            let csv = "\uFEFFDatum;Uhrzeit;Dateiname\n";
-            printHistory.forEach(h => { csv += `${h.datum};${h.zeit};${h.datei}\n`; });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Logistik_Export_${new Date().toLocaleDateString()}.csv`;
-            link.click();
-        }
-    </script>
 </body>
 </html>
