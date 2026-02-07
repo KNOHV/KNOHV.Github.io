@@ -2,114 +2,52 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Widerrufsformular - Kummers Onlinehandel</title>
+    <title>Widerruf bestätigt - Kummers Onlinehandel</title>
     <style>
-        :root { --primary: #d32f2f; --bg: #f8f9fa; }
-        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 8px; shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
-        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { cursor: pointer; border: none; border-radius: 4px; padding: 12px 20px; font-size: 16px; transition: 0.3s; }
-        .btn-send { background: var(--primary); color: white; width: 100%; }
-        .btn-print { background: #6c757d; color: white; margin-top: 10px; width: 100%; }
-        .btn-close { background: #333; color: white; margin-top: 10px; width: 100%; }
-        
-        #success-message { display: none; text-align: center; }
-        .status-badge { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
-
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; }
-            .container { box-shadow: none; border: none; }
-        }
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; max-width: 500px; width: 100%; }
+        .success-banner { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
+        .data-box { text-align: left; background: #eee; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; margin: 5px; }
+        .btn-print { background: #007bff; color: white; }
+        .btn-close { background: #333; color: white; }
+        @media print { .no-print { display: none; } body { background: white; padding: 0; } }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-content">
-    <div id="form-section">
-        <h2>Widerrufsformular</h2>
-        <p>Bitte füllen Sie das Formular aus, um Ihren Widerruf einzureichen.</p>
-        
-        <form id="widerruf-form">
-            <input type="hidden" name="_subject" value="Widerruf eingegangen - Kummers Onlinehandel">
-            <input type="hidden" name="_autoresponder" value="Vielen Dank. Ihr Widerruf wurde entgegen genommen und wird bearbeitet.">
-            <input type="hidden" name="_captcha" value="false">
+<div class="card">
+    <div class="success-banner">✔ Ihr Widerruf wurde entgegen genommen.</div>
+    <p>Vielen Dank. Wir haben Ihre Daten erhalten und bearbeiten Ihren Fall schnellstmöglich.</p>
 
-            <div class="form-group">
-                <label>Name, Vorname:</label>
-                <input type="text" name="name" id="p_name" required>
-            </div>
-            <div class="form-group">
-                <label>Bestellnummer:</label>
-                <input type="text" name="bestellnummer" id="p_order" required>
-            </div>
-            <div class="form-group">
-                <label>E-Mail Adresse:</label>
-                <input type="email" name="email" id="p_email" required>
-            </div>
-            <div class="form-group">
-                <label>Grund des Widerrufs (Optional):</label>
-                <textarea name="grund" id="p_reason"></textarea>
-            </div>
-
-            <button type="submit" class="btn-send no-print">Widerruf verbindlich abschicken</button>
-        </form>
+    <div class="data-box" id="output">
+        <strong>Zusammenfassung:</strong><br>
+        Name: <span id="out-name"></span><br>
+        Bestellung: <span id="out-order"></span><br>
+        E-Mail: <span id="out-email"></span><br>
+        Datum: <span id="out-date"></span>
     </div>
 
-    <div id="success-message">
-        <div class="status-badge">✔ Ihr Widerruf wurde entgegen genommen.</div>
-        <p>Ihre Daten wurden sicher an den Kundenservice übermittelt.</p>
-        <hr>
-        <div id="print-area">
-            <p><strong>Zusammenfassung Ihres Widerrufs:</strong></p>
-            <p align="left">
-                Name: <span id="res_name"></span><br>
-                Bestellung: <span id="res_order"></span><br>
-                Datum: <span id="res_date"></span>
-            </p>
-        </div>
-        
-        <button onclick="window.print()" class="btn-print no-print">Dieses Formular ausdrucken (Beleg)</button>
-        <button onclick="window.close(); alert('Bitte schließen Sie diesen Tab manuell.');" class="btn-close no-print">Seite schließen</button>
-    </div>
+    <button onclick="window.print()" class="btn-print no-print">Beleg ausdrucken</button>
+    <button onclick="closeTab()" class="btn-close no-print">Seite schließen</button>
 </div>
 
 <script>
-    const form = document.getElementById('widerruf-form');
+    // Daten aus der URL extrahieren
+    const params = new URLSearchParams(window.location.search);
     
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.querySelector('.btn-send');
-        btn.innerText = "Wird gesendet...";
-        btn.disabled = true;
+    if(params.has('status')) {
+        document.getElementById('out-name').innerText = params.get('name');
+        document.getElementById('out-order').innerText = params.get('order');
+        document.getElementById('out-email').innerText = params.get('email');
+        document.getElementById('out-date').innerText = new Date().toLocaleString('de-DE');
+    }
 
-        // Formulardaten sammeln
-        const formData = new FormData(form);
-        
-        // Anzeige-Daten für den Druck vorbereiten
-        document.getElementById('res_name').innerText = document.getElementById('p_name').value;
-        document.getElementById('res_order').innerText = document.getElementById('p_order').value;
-        document.getElementById('res_date').innerText = new Date().toLocaleString();
-
-        // Versand via Fetch (AJAX)
-        fetch("https://formsubmit.co/ajax/Kundenservice@kummers-onlinehandel.de", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                document.getElementById('form-section').style.display = 'none';
-                document.getElementById('success-message').style.display = 'block';
-            } else {
-                alert("Fehler beim Senden. Bitte versuchen Sie es erneut.");
-            }
-        })
-        .catch(error => alert("Netzwerkfehler: " + error));
-    });
+    function closeTab() {
+        window.close();
+        // Falls der Browser window.close() blockiert:
+        alert("Der Vorgang ist abgeschlossen. Sie können diesen Tab nun manuell schließen.");
+    }
 </script>
 
 </body>
