@@ -3,106 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kontakt - Kummers Onlinehandel</title>
+    <title>Widerrufsformular - Kummers Onlinehandel</title>
     <style>
-        :root {
-            --primary-color: #0056b3;
-            --secondary-color: #f4f4f4;
-            --text-color: #333;
+        :root { --primary: #d32f2f; --bg: #f8f9fa; }
+        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 8px; shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { cursor: pointer; border: none; border-radius: 4px; padding: 12px 20px; font-size: 16px; transition: 0.3s; }
+        .btn-send { background: var(--primary); color: white; width: 100%; }
+        .btn-print { background: #6c757d; color: white; margin-top: 10px; width: 100%; }
+        .btn-close { background: #333; color: white; margin-top: 10px; width: 100%; }
+        
+        #success-message { display: none; text-align: center; }
+        .status-badge { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .container { box-shadow: none; border: none; }
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .form-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 500px;
-        }
-        h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box; /* Wichtig für Padding */
-        }
-        textarea {
-            height: 120px;
-            resize: vertical;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        button:hover {
-            background-color: #004494;
-        }
-        /* Spam-Schutz verstecken */
-        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2>Kontaktieren Sie uns</h2>
-    
-    <form action="https://formsubmit.co/Kundenservice@kummers-onlinehandel.de" method="POST">
+<div class="container" id="main-content">
+    <div id="form-section">
+        <h2>Widerrufsformular</h2>
+        <p>Bitte füllen Sie das Formular aus, um Ihren Widerruf einzureichen.</p>
         
-        <input type="text" name="_honey" class="hidden">
-        
-        <input type="hidden" name="_autoresponder" value="Vielen Dank für Ihre Nachricht an Kummers Onlinehandel! Wir haben Ihre Anfrage erhalten und werden uns schnellstmöglich bei Ihnen melden.">
-        
-        <input type="hidden" name="_subject" value="Neue Kundenanfrage - Kummers Onlinehandel">
-        
-        <input type="hidden" name="_captcha" value="false">
+        <form id="widerruf-form">
+            <input type="hidden" name="_subject" value="Widerruf eingegangen - Kummers Onlinehandel">
+            <input type="hidden" name="_autoresponder" value="Vielen Dank. Ihr Widerruf wurde entgegen genommen und wird bearbeitet.">
+            <input type="hidden" name="_captcha" value="false">
 
-        <div class="form-group">
-            <label for="name">Ihr Name:</label>
-            <input type="text" id="name" name="name" placeholder="Max Mustermann" required>
+            <div class="form-group">
+                <label>Name, Vorname:</label>
+                <input type="text" name="name" id="p_name" required>
+            </div>
+            <div class="form-group">
+                <label>Bestellnummer:</label>
+                <input type="text" name="bestellnummer" id="p_order" required>
+            </div>
+            <div class="form-group">
+                <label>E-Mail Adresse:</label>
+                <input type="email" name="email" id="p_email" required>
+            </div>
+            <div class="form-group">
+                <label>Grund des Widerrufs (Optional):</label>
+                <textarea name="grund" id="p_reason"></textarea>
+            </div>
+
+            <button type="submit" class="btn-send no-print">Widerruf verbindlich abschicken</button>
+        </form>
+    </div>
+
+    <div id="success-message">
+        <div class="status-badge">✔ Ihr Widerruf wurde entgegen genommen.</div>
+        <p>Ihre Daten wurden sicher an den Kundenservice übermittelt.</p>
+        <hr>
+        <div id="print-area">
+            <p><strong>Zusammenfassung Ihres Widerrufs:</strong></p>
+            <p align="left">
+                Name: <span id="res_name"></span><br>
+                Bestellung: <span id="res_order"></span><br>
+                Datum: <span id="res_date"></span>
+            </p>
         </div>
-
-        <div class="form-group">
-            <label for="email">Ihre E-Mail-Adresse:</label>
-            <input type="email" id="email" name="email" placeholder="beispiel@mail.de" required>
-        </div>
-
-        <div class="form-group">
-            <label for="message">Ihre Nachricht:</label>
-            <textarea id="message" name="message" placeholder="Wie können wir Ihnen helfen?" required></textarea>
-        </div>
-
-        <button type="submit">Nachricht jetzt senden</button>
-    </form>
+        
+        <button onclick="window.print()" class="btn-print no-print">Dieses Formular ausdrucken (Beleg)</button>
+        <button onclick="window.close(); alert('Bitte schließen Sie diesen Tab manuell.');" class="btn-close no-print">Seite schließen</button>
+    </div>
 </div>
+
+<script>
+    const form = document.getElementById('widerruf-form');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.querySelector('.btn-send');
+        btn.innerText = "Wird gesendet...";
+        btn.disabled = true;
+
+        // Formulardaten sammeln
+        const formData = new FormData(form);
+        
+        // Anzeige-Daten für den Druck vorbereiten
+        document.getElementById('res_name').innerText = document.getElementById('p_name').value;
+        document.getElementById('res_order').innerText = document.getElementById('p_order').value;
+        document.getElementById('res_date').innerText = new Date().toLocaleString();
+
+        // Versand via Fetch (AJAX)
+        fetch("https://formsubmit.co/ajax/Kundenservice@kummers-onlinehandel.de", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById('form-section').style.display = 'none';
+                document.getElementById('success-message').style.display = 'block';
+            } else {
+                alert("Fehler beim Senden. Bitte versuchen Sie es erneut.");
+            }
+        })
+        .catch(error => alert("Netzwerkfehler: " + error));
+    });
+</script>
 
 </body>
 </html>
