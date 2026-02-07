@@ -2,141 +2,107 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>SKU Krypto-Tool | Kummer-Nedeideck</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontakt - Kummers Onlinehandel</title>
     <style>
-        :root { --primary: #2563eb; --secondary: #059669; --accent: #64748b; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 480px; margin-bottom: 40px; }
-        h2 { margin-top: 0; color: #1e293b; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        label { display: block; margin: 15px 0 5px; font-weight: 600; font-size: 0.9em; color: #475569; }
-        input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; }
-
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
-        button { padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.1s, opacity 0.2s; font-size: 14px; }
-        button:active { transform: scale(0.98); }
-        .btn-enc { background: var(--primary); }
-        .btn-dec { background: var(--secondary); }
-        .btn-action { background: var(--accent); width: 100%; margin-top: 10px; }
-
-        .result-box { background: #f1f5f9; padding: 15px; margin-top: 15px; border-radius: 6px; border: 1px dashed #cbd5e1; min-height: 40px; word-break: break-all; font-family: 'Courier New', monospace; position: relative; }
-        .char-count { font-size: 0.75rem; color: #64748b; position: absolute; bottom: 5px; right: 10px; }
-
-        footer { margin-top: auto; padding: 20px; text-align: center; color: #64748b; font-size: 0.9em; width: 100%; border-top: 1px solid #e2e8f0; }
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f4f4f4;
+            --text-color: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Wichtig für Padding */
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background-color: #004494;
+        }
+        /* Spam-Schutz verstecken */
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>SKU Secure-Tool</h2>
+<div class="form-container">
+    <h2>Kontaktieren Sie uns</h2>
+    
+    <form action="https://formsubmit.co/Kundenservice@kummers-onlinehandel.de" method="POST">
+        
+        <input type="text" name="_honey" class="hidden">
+        
+        <input type="hidden" name="_autoresponder" value="Vielen Dank für Ihre Nachricht an Kummers Onlinehandel! Wir haben Ihre Anfrage erhalten und werden uns schnellstmöglich bei Ihnen melden.">
+        
+        <input type="hidden" name="_subject" value="Neue Kundenanfrage - Kummers Onlinehandel">
+        
+        <input type="hidden" name="_captcha" value="false">
 
-    <label>Master-Passwort</label>
-    <input type="password" id="pw" value="MeinGeheimnis123">
+        <div class="form-group">
+            <label for="name">Ihr Name:</label>
+            <input type="text" id="name" name="name" placeholder="Max Mustermann" required>
+        </div>
 
-    <label>Original SKU</label>
-    <input type="text" id="skuInput" placeholder="z.B. SKU-99-RED" maxlength="25">
+        <div class="form-group">
+            <label for="email">Ihre E-Mail-Adresse:</label>
+            <input type="email" id="email" name="email" placeholder="beispiel@mail.de" required>
+        </div>
 
-    <div class="btn-group">
-        <button class="btn-enc" onclick="handleEncrypt()">Verschlüsseln ↓</button>
-        <button class="btn-dec" onclick="handleDecrypt()">Entschlüsseln ↑</button>
-    </div>
+        <div class="form-group">
+            <label for="message">Ihre Nachricht:</label>
+            <textarea id="message" name="message" placeholder="Wie können wir Ihnen helfen?" required></textarea>
+        </div>
 
-    <label>Verschlüsselter Code</label>
-    <input type="text" id="cipherInput" placeholder="Hier Code einfügen">
-
-    <label>Ergebnis:</label>
-    <div class="result-box" id="outputField">
-        Bereit...
-        <span class="char-count" id="count">0/45</span>
-    </div>
-
-    <button class="btn-action" onclick="copyToClipboard()">Ergebnis kopieren</button>
-    <button class="btn-action" style="background:#475569" onclick="saveToFile()">Als .txt speichern</button>
+        <button type="submit">Nachricht jetzt senden</button>
+    </form>
 </div>
-
-<footer>
-    &copy; 2024 - 2026 Copyright by <strong>Kummer-Nedeideck Online-Handel & Vertrieb</strong>
-</footer>
-
-<script>
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    const toB64 = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const fromB64 = s => {
-        s = s.replace(/-/g, '+').replace(/_/g, '/');
-        while (s.length % 4) s += '=';
-        return new Uint8Array(atob(s).split("").map(c => c.charCodeAt(0)));
-    };
-
-    async function deriveKey(pw) {
-        const material = await crypto.subtle.importKey("raw", encoder.encode(pw), "PBKDF2", false, ["deriveKey"]);
-        return crypto.subtle.deriveKey(
-            { name: "PBKDF2", salt: encoder.encode("knd-salt"), iterations: 1000, hash: "SHA-256" },
-            material, { name: "AES-CTR", length: 128 }, false, ["encrypt", "decrypt"]
-        );
-    }
-
-    async function handleEncrypt() {
-        const pw = document.getElementById('pw').value;
-        const sku = document.getElementById('skuInput').value;
-        if (!sku) return alert("Bitte SKU eingeben");
-
-        const key = await deriveKey(pw);
-        const iv = crypto.getRandomValues(new Uint8Array(8));
-        const counter = new Uint8Array(16); counter.set(iv);
-
-        const encrypted = await crypto.subtle.encrypt({ name: "AES-CTR", counter, length: 64 }, key, encoder.encode(sku));
-        const combined = new Uint8Array(iv.length + encrypted.byteLength);
-        combined.set(iv);
-        combined.set(new Uint8Array(encrypted), iv.length);
-
-        const res = toB64(combined);
-        document.getElementById('cipherInput').value = res;
-        showResult(res);
-    }
-
-    async function handleDecrypt() {
-        const pw = document.getElementById('pw').value;
-        const cipherText = document.getElementById('cipherInput').value;
-        if (!cipherText) return alert("Kein Code zum Entschlüsseln vorhanden");
-
-        try {
-            const key = await deriveKey(pw);
-            const combined = fromB64(cipherText);
-            const iv = combined.slice(0, 8);
-            const data = combined.slice(8);
-            const counter = new Uint8Array(16); counter.set(iv);
-
-            const decrypted = await crypto.subtle.decrypt({ name: "AES-CTR", counter, length: 64 }, key, data);
-            showResult(decoder.decode(decrypted));
-        } catch (e) {
-            showResult("FEHLER: Falscher Code!");
-        }
-    }
-
-    function showResult(text) {
-        const el = document.getElementById('outputField');
-        el.firstChild.textContent = text;
-        document.getElementById('count').innerText = text.length + "/45";
-    }
-
-    function copyToClipboard() {
-        const text = document.getElementById('outputField').firstChild.textContent;
-        if (text === "Bereit...") return;
-        navigator.clipboard.writeText(text);
-        alert("In Zwischenablage kopiert!");
-    }
-
-    function saveToFile() {
-        const text = document.getElementById('outputField').firstChild.textContent;
-        if (text === "Bereit...") return;
-        const blob = new Blob([`Ergebnis: ${text}\nDatum: ${new Date().toLocaleString()}\nCopyright: Kummer-Nedeideck`], {type: "text/plain"});
-        const anchor = document.createElement("a");
-        anchor.download = "sku_export.txt";
-        anchor.href = window.URL.createObjectURL(blob);
-        anchor.click();
-    }
-</script>
 
 </body>
 </html>
